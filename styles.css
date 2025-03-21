@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+}
+.button-container {
+    text-align: center;
+}
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+    background-color: #45a049;
+}
+label {
+    display: inline-block;
+    width: 50px;
+    margin: 10px 0;
+}
+input, select {
+    padding: 5px;
+    width: 100px;
+}
+#result table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+#result th, #result td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+#result th {
+    background-color: #f2f2f2;
+}
