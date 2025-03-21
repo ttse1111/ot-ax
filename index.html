@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OT Ax Scoring Conversion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .section {
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        label {
+            display: inline-block;
+            width: 50px;
+            margin: 10px 0 5px;
+        }
+        input, select, button {
+            padding: 5px;
+            margin: 5px 10px 5px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:not(:disabled):hover {
+            background-color: #45a049;
+        }
+        #resetBtn, #backBtn {
+            background-color: #f44336;
+        }
+        #resetBtn:hover, #backBtn:hover {
+            background-color: #da190b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Homepage -->
+    <div id="homepage" class="section">
+        <h1>OT Ax Scoring Conversion</h1>
+        <button id="bwap2Btn">BWAP 2</button>
+        <button id="otherBtn" disabled>Other (coming soon)</button>
+    </div>
+
+    <!-- BWAP 2 Conversion Page -->
+    <div id="bwap2" class="section" style="display: none;">
+        <h2>BWAP 2 Conversion</h2>
+        <label for="normSelect">Norm:</label>
+        <select id="normSelect">
+            <option value="MR">MR</option>
+            <option value="Learning Disability">Learning Disability</option>
+            <option value="Physical Disability">Physical Disability</option>
+            <option value="Emotional Disturbance">Emotional Disturbance</option>
+        </select>
+        <br>
+        <label for="haInput">HA:</label>
+        <input type="text" id="haInput">
+        <br>
+        <label for="irInput">IR:</label>
+        <input type="text" id="irInput">
+        <br>
+        <label for="coInput">CO:</label>
+        <input type="text" id="coInput">
+        <br>
+        <label for="wpInput">WP:</label>
+        <input type="text" id="wpInput">
+        <br>
+        <label for="bwaInput">BWA:</label>
+        <input type="text" id="bwaInput" readonly>
+        <br>
+        <button id="enterBtn">Enter</button>
+        <button id="resetBtn">Reset</button>
+        <button id="backBtn">Back</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Norm data from Excel
+        const norms = {
+            "MR": [
+                {"T-score": 73, "HA": "", "IR": "48", "CO": "71-76", "WP": "84-88", "BWA": "231-252", "Percentile": 99},
+                {"T-score": 71, "HA": "40", "IR": "47", "CO": "68-70", "WP": "82-83", "BWA": "225-230", "Percentile": 98},
+                {"T-score": 69, "HA": "", "IR": "", "CO": "65-67", "WP": "81", "BWA": "222-224", "Percentile": 97},
+                {"T-score": 68, "HA": "39", "IR": "45-46", "CO": "64", "WP": "79-80", "BWA": "218-221", "Percentile": 96},
+                {"T-score": 67, "HA": "", "IR": "", "CO": "63", "WP": "78", "BWA": "212-217", "Percentile": 95},
+                {"T-score": 66, "HA": "", "IR": "44", "CO": "61-62", "WP": "77", "BWA": "210-211", "Percentile": 94},
+                {"T-score": 65, "HA": "38", "IR": "43", "CO": "60", "WP": "76", "BWA": "207-209", "Percentile": 93},
+                {"T-score": 64, "HA": "37", "IR": "42", "CO": "59", "WP": "75", "BWA": "202-206", "Percentile": 92},
+                {"T-score": 63, "HA": "", "IR": "41", "CO": "57-58", "WP": "73-74", "BWA": "198-201", "Percentile": 90},
+                {"T-score": 62, "HA": "36", "IR": "", "CO": "55-56", "WP": "72", "BWA": "193-197", "Percentile": 88},
+                {"T-score": 61, "HA": "", "IR": "40", "CO": "54", "WP": "70-71", "BWA": "192", "Percentile": 86},
+                {"T-score": 60, "HA": "35", "IR": "39", "CO": "51-53", "WP": "68-69", "BWA": "186-191", "Percentile": 84},
+                {"T-score": 59, "HA": "34", "IR": "37-38", "CO": "49-50", "WP": "66-67", "BWA": "182-185", "Percentile": 82},
+                {"T-score": 58, "HA": "", "IR": "36", "CO": "48", "WP": "64-65", "BWA": "178-181", "Percentile": 79},
+                {"T-score": 57, "HA": "33", "IR": "", "CO": "47", "WP": "62-63", "BWA": "174-177", "Percentile": 75},
+                {"T-score": 56, "HA": "31-32", "IR": "35", "CO": "46", "WP": "59-61", "BWA": "166-173", "Percentile": 73},
+                {"T-score": 55, "HA": "", "IR": "34", "CO": "45", "WP": "57-58", "BWA": "162-165", "Percentile": 69},
+                {"T-score": 54, "HA": "30", "IR": "33", "CO": "44", "WP": "56", "BWA": "153-161", "Percentile": 66},
+                {"T-score": 53, "HA": "29", "IR": "31-32", "CO": "40-43", "WP": "53-55", "BWA": "146-152", "Percentile": 62},
+                {"T-score": 52, "HA": "28", "IR": "30", "CO": "37-39", "WP": "50-52", "BWA": "142-145", "Percentile": 58},
+                {"T-score": 51, "HA": "27", "IR": "29", "CO": "35-36", "WP": "47-49", "BWA": "139-141", "Percentile": 54},
+                {"T-score": 50, "HA": "26", "IR": "28", "CO": "34", "WP": "46", "BWA": "135-138", "Percentile": 50},
+                {"T-score": 49, "HA": "25", "IR": "27", "CO": "31-33", "WP": "44-45", "BWA": "129-134", "Percentile": 46},
+                {"T-score": 48, "HA": "24", "IR": "25-26", "CO": "28-30", "WP": "41-43", "BWA": "121-128", "Percentile": 42},
+                {"T-score": 47, "HA": "23", "IR": "24", "CO": "26-27", "WP": "38-40", "BWA": "115-120", "Percentile": 38},
+                {"T-score": 46, "HA": "22", "IR": "23", "CO": "24-25", "WP": "37", "BWA": "110-114", "Percentile": 34},
+                {"T-score": 45, "HA": "", "IR": "22", "CO": "23", "WP": "35-36", "BWA": "107-109", "Percentile": 31},
+                {"T-score": 44, "HA": "21", "IR": "21", "CO": "20-22", "WP": "33-34", "BWA": "97-106", "Percentile": 27},
+                {"T-score": 43, "HA": "20", "IR": "20", "CO": "19", "WP": "32", "BWA": "93-96", "Percentile": 25},
+                {"T-score": 42, "HA": "19", "IR": "19", "CO": "17-18", "WP": "29-31", "BWA": "89-92", "Percentile": 21},
+                {"T-score": 41, "HA": "18", "IR": "18", "CO": "16", "WP": "28", "BWA": "86-88", "Percentile": 18},
+                {"T-score": 40, "HA": "", "IR": "17", "CO": "15", "WP": "26-27", "BWA": "79-85", "Percentile": 16},
+                {"T-score": 39, "HA": "17", "IR": "16", "CO": "13-14", "WP": "25", "BWA": "76-78", "Percentile": 14},
+                {"T-score": 38, "HA": "16", "IR": "15", "CO": "12", "WP": "23-24", "BWA": "72-75", "Percentile": 12},
+                {"T-score": 37, "HA": "", "IR": "13-14", "CO": "11", "WP": "21-22", "BWA": "68-71", "Percentile": 10},
+                {"T-score": 36, "HA": "15", "IR": "12", "CO": "8-10", "WP": "20", "BWA": "61-67", "Percentile": 8},
+                {"T-score": 35, "HA": "14", "IR": "11", "CO": "7", "WP": "18-19", "BWA": "55-60", "Percentile": 7},
+                {"T-score": 34, "HA": "13", "IR": "10", "CO": "5-6", "WP": "14-17", "BWA": "45-54", "Percentile": 5},
+                {"T-score": 32, "HA": "12", "IR": "8-9", "CO": "4", "WP": "10-13", "BWA": "39-44", "Percentile": 4},
+                {"T-score": 31, "HA": "11", "IR": "7", "CO": "", "WP": "7-9", "BWA": "29-38", "Percentile": 3},
+                {"T-score": 29, "HA": "9-10", "IR": "5-6", "CO": "3", "WP": "4-6", "BWA": "20-28", "Percentile": 2},
+                {"T-score": 27, "HA": "0-8", "IR": "0-4", "CO": "0-2", "WP": "0-3", "BWA": "0-19", "Percentile": 1}
+            ],
+            "Learning Disability": [
+                {"T-score": 73, "HA": "", "IR": "", "CO": "76", "WP": "88", "BWA": "248-252", "Percentile": 99},
+                {"T-score": 71, "HA": "40", "IR": "48", "CO": "75", "WP": "87", "BWA": "244-247", "Percentile": 98},
+                {"T-score": 69, "HA": "", "IR": "", "CO": "74", "WP": "", "BWA": "242-243", "Percentile": 97},
+                {"T-score": 68, "HA": "", "IR": "47", "CO": "73", "WP": "86", "BWA": "240-241", "Percentile": 96},
+                {"T-score": 67, "HA": "39", "IR": "", "CO": "72", "WP": "85", "BWA": "238-239", "Percentile": 95},
+                {"T-score": 66, "HA": "", "IR": "", "CO": "", "WP": "84", "BWA": "235-237", "Percentile": 94},
+                {"T-score": 65, "HA": "", "IR": "46", "CO": "71", "WP": "83", "BWA": "232-234", "Percentile": 93},
+                {"T-score": 64, "HA": "38", "IR": "", "CO": "", "WP": "82", "BWA": "229-231", "Percentile": 92},
+                {"T-score": 63, "HA": "", "IR": "", "CO": "", "WP": "81", "BWA": "227-228", "Percentile": 90},
+                {"T-score": 62, "HA": "37", "IR": "45", "CO": "70", "WP": "", "BWA": "225-226", "Percentile": 88},
+                {"T-score": 61, "HA": "", "IR": "", "CO": "", "WP": "", "BWA": "224", "Percentile": 86},
+                {"T-score": 60, "HA": "", "IR": "44", "CO": "68-69", "WP": "80", "BWA": "221-223", "Percentile": 84},
+                {"T-score": 59, "HA": "", "IR": "43", "CO": "67", "WP": "79", "BWA": "217-220", "Percentile": 82},
+                {"T-score": 58, "HA": "", "IR": "42", "CO": "66", "WP": "77-78", "BWA": "212-216", "Percentile": 79},
+                {"T-score": 57, "HA": "36", "IR": "", "CO": "64-65", "WP": "76", "BWA": "206-211", "Percentile": 75},
+                {"T-score": 56, "HA": "", "IR": "41", "CO": "", "WP": "74-75", "BWA": "199-205", "Percentile": 73},
+                {"T-score": 55, "HA": "", "IR": "", "CO": "62-63", "WP": "73", "BWA": "194-198", "Percentile": 69},
+                {"T-score": 54, "HA": "34-35", "IR": "39-40", "CO": "61", "WP": "72", "BWA": "189-193", "Percentile": 66},
+                {"T-score": 53, "HA": "33", "IR": "38", "CO": "59-60", "WP": "66-71", "BWA": "187-188", "Percentile": 62},
+                {"T-score": 52, "HA": "32", "IR": "", "CO": "58", "WP": "65", "BWA": "185-186", "Percentile": 58},
+                {"T-score": 51, "HA": "31", "IR": "37", "CO": "", "WP": "64", "BWA": "184", "Percentile": 54},
+                {"T-score": 50, "HA": "", "IR": "35-36", "CO": "56-57", "WP": "62-63", "BWA": "181-183", "Percentile": 50},
+                {"T-score": 49, "HA": "30", "IR": "34", "CO": "", "WP": "60-61", "BWA": "178-180", "Percentile": 46},
+                {"T-score": 48, "HA": "29", "IR": "32-33", "CO": "54-55", "WP": "57-59", "BWA": "175-177", "Percentile": 42},
+                {"T-score": 47, "HA": "27-28", "IR": "31", "CO": "53", "WP": "56", "BWA": "170-174", "Percentile": 38},
+                {"T-score": 46, "HA": "26", "IR": "30", "CO": "52", "WP": "55", "BWA": "164-169", "Percentile": 34},
+                {"T-score": 45, "HA": "", "IR": "", "CO": "51", "WP": "54", "BWA": "161-163", "Percentile": 31},
+                {"T-score": 44, "HA": "25", "IR": "29", "CO": "49-50", "WP": "53", "BWA": "155-160", "Percentile": 27},
+                {"T-score": 43, "HA": "24", "IR": "28", "CO": "47-48", "WP": "52", "BWA": "150-154", "Percentile": 25},
+                {"T-score": 42, "HA": "", "IR": "27", "CO": "45-46", "WP": "51", "BWA": "148-149", "Percentile": 21},
+                {"T-score": 41, "HA": "23", "IR": "26", "CO": "43-44", "WP": "50", "BWA": "146-147", "Percentile": 18},
+                {"T-score": 40, "HA": "", "IR": "25", "CO": "41-42", "WP": "48-49", "BWA": "144-145", "Percentile": 16},
+                {"T-score": 39, "HA": "22", "IR": "24", "CO": "40", "WP": "47", "BWA": "142-143", "Percentile": 14},
+                {"T-score": 38, "HA": "", "IR": "23", "CO": "39", "WP": "46", "BWA": "140-141", "Percentile": 12},
+                {"T-score": 37, "HA": "", "IR": "22", "CO": "", "WP": "45", "BWA": "138-139", "Percentile": 10},
+                {"T-score": 36, "HA": "21", "IR": "21", "CO": "38", "WP": "44", "BWA": "135-137", "Percentile": 8},
+                {"T-score": 35, "HA": "", "IR": "19-20", "CO": "37", "WP": "40-43", "BWA": "133-134", "Percentile": 7},
+                {"T-score": 34, "HA": "20", "IR": "18", "CO": "", "WP": "38-39", "BWA": "130-132", "Percentile": 5},
+                {"T-score": 32, "HA": "19", "IR": "17", "CO": "36", "WP": "37", "BWA": "120-129", "Percentile": 4},
+                {"T-score": 31, "HA": "16-18", "IR": "15-16", "CO": "35", "WP": "35-36", "BWA": "113-119", "Percentile": 3},
+                {"T-score": 29, "HA": "13-15", "IR": "11-14", "CO": "34", "WP": "27-34", "BWA": "107-112", "Percentile": 2},
+                {"T-score": 27, "HA": "0-12", "IR": "0-10", "CO": "0-33", "WP": "0-26", "BWA": "0-106", "Percentile": 1}
+            ],
+            "Physical Disability": [
+                {"T-score": 73, "HA": "", "IR": "", "CO": "76", "WP": "80-88", "BWA": "237-252", "Percentile": 99},
+                {"T-score": 71, "HA": "", "IR": "", "CO": "75", "WP": "79", "BWA": "234-236", "Percentile": 98},
+                {"T-score": 69, "HA": "40", "IR": "48", "CO": "72-74", "WP": "76-78", "BWA": "230-233", "Percentile": 97},
+                {"T-score": 68, "HA": "39", "IR": "", "CO": "70-71", "WP": "74-75", "BWA": "226-229", "Percentile": 96},
+                {"T-score": 67, "HA": "", "IR": "47", "CO": "69", "WP": "73", "BWA": "219-225", "Percentile": 95},
+                {"T-score": 66, "HA": "", "IR": "", "CO": "68", "WP": "70-72", "BWA": "217-218", "Percentile": 94},
+                {"T-score": 65, "HA": "38", "IR": "", "CO": "67", "WP": "68-69", "BWA": "215-216", "Percentile": 93},
+                {"T-score": 64, "HA": "", "IR": "46", "CO": "66", "WP": "67", "BWA": "212-214", "Percentile": 92},
+                {"T-score": 63, "HA": "37", "IR": "", "CO": "65", "WP": "66", "BWA": "206-211", "Percentile": 90},
+                {"T-score": 62, "HA": "35-36", "IR": "45", "CO": "62-64", "WP": "65", "BWA": "201-205", "Percentile": 88},
+                {"T-score": 61, "HA": "", "IR": "", "CO": "61", "WP": "64", "BWA": "200", "Percentile": 86},
+                {"T-score": 60, "HA": "34", "IR": "44", "CO": "59-60", "WP": "60-63", "BWA": "194-199", "Percentile": 84},
+                {"T-score": 59, "HA": "", "IR": "42-43", "CO": "58", "WP": "58-59", "BWA": "188-193", "Percentile": 82},
+                {"T-score": 58, "HA": "", "IR": "41", "CO": "57", "WP": "55-57", "BWA": "183-187", "Percentile": 79},
+                {"T-score": 57, "HA": "32-33", "IR": "", "CO": "56", "WP": "", "BWA": "178-182", "Percentile": 75},
+                {"T-score": 56, "HA": "", "IR": "40", "CO": "53-55", "WP": "54", "BWA": "172-177", "Percentile": 73},
+                {"T-score": 55, "HA": "31", "IR": "38-39", "CO": "50-52", "WP": "52-53", "BWA": "166-171", "Percentile": 69},
+                {"T-score": 54, "HA": "", "IR": "", "CO": "48-49", "WP": "", "BWA": "161-165", "Percentile": 66},
+                {"T-score": 53, "HA": "30", "IR": "36-37", "CO": "46-47", "WP": "50-51", "BWA": "154-160", "Percentile": 62},
+                {"T-score": 52, "HA": "29", "IR": "35", "CO": "42-45", "WP": "49", "BWA": "151-153", "Percentile": 58},
+                {"T-score": 51, "HA": "28", "IR": "", "CO": "39-41", "WP": "44-48", "BWA": "143-150", "Percentile": 54},
+                {"T-score": 50, "HA": "27", "IR": "33-34", "CO": "37-38", "WP": "43", "BWA": "139-142", "Percentile": 50},
+                {"T-score": 49, "HA": "26", "IR": "32", "CO": "36", "WP": "42", "BWA": "135-138", "Percentile": 46},
+                {"T-score": 48, "HA": "24-25", "IR": "31", "CO": "35", "WP": "38-41", "BWA": "126-134", "Percentile": 42},
+                {"T-score": 47, "HA": "", "IR": "30", "CO": "34", "WP": "35-37", "BWA": "123-125", "Percentile": 38},
+                {"T-score": 46, "HA": "23", "IR": "29", "CO": "33", "WP": "33-34", "BWA": "119-122", "Percentile": 34},
+                {"T-score": 45, "HA": "", "IR": "28", "CO": "32", "WP": "", "BWA": "115-118", "Percentile": 31},
+                {"T-score": 44, "HA": "21-22", "IR": "26-27", "CO": "30-31", "WP": "31-32", "BWA": "110-114", "Percentile": 27},
+                {"T-score": 43, "HA": "20", "IR": "25", "CO": "28-29", "WP": "30", "BWA": "107-109", "Percentile": 25},
+                {"T-score": 42, "HA": "19", "IR": "24", "CO": "25-27", "WP": "28-29", "BWA": "100-106", "Percentile": 21},
+                {"T-score": 41, "HA": "18", "IR": "23", "CO": "23-24", "WP": "27", "BWA": "95-99", "Percentile": 18},
+                {"T-score": 40, "HA": "16-17", "IR": "22", "CO": "21-22", "WP": "26", "BWA": "91-94", "Percentile": 16},
+                {"T-score": 39, "HA": "15", "IR": "21", "CO": "19-20", "WP": "25", "BWA": "88-90", "Percentile": 14},
+                {"T-score": 38, "HA": "14", "IR": "20", "CO": "18", "WP": "24", "BWA": "85-87", "Percentile": 12},
+                {"T-score": 37, "HA": "", "IR": "19", "CO": "17", "WP": "23", "BWA": "79-84", "Percentile": 10},
+                {"T-score": 36, "HA": "13", "IR": "17-18", "CO": "16", "WP": "20-22", "BWA": "75-78", "Percentile": 8},
+                {"T-score": 35, "HA": "", "IR": "16", "CO": "14-15", "WP": "18-19", "BWA": "70-74", "Percentile": 7},
+                {"T-score": 34, "HA": "12", "IR": "14-15", "CO": "12-13", "WP": "13-17", "BWA": "63-69", "Percentile": 5},
+                {"T-score": 32, "HA": "", "IR": "13", "CO": "10-11", "WP": "12", "BWA": "58-62", "Percentile": 4},
+                {"T-score": 31, "HA": "11", "IR": "11-12", "CO": "6-9", "WP": "10-11", "BWA": "55-57", "Percentile": 3},
+                {"T-score": 29, "HA": "9-10", "IR": "10", "CO": "3-5", "WP": "8-9", "BWA": "38-54", "Percentile": 2},
+                {"T-score": 27, "HA": "0-8", "IR": "0-9", "CO": "0-2", "WP": "0-7", "BWA": "0-37", "Percentile": 1}
+            ],
+            "Emotional Disturbance": [
+                {"T-score": 73, "HA": "40", "IR": "43-48", "CO": "", "WP": "85-88", "BWA": "232-252", "Percentile": 99},
+                {"T-score": 71, "HA": "39", "IR": "39-42", "CO": "75-76", "WP": "82-84", "BWA": "226-231", "Percentile": 98},
+                {"T-score": 69, "HA": "38", "IR": "38", "CO": "74", "WP": "79-81", "BWA": "223-225", "Percentile": 97},
+                {"T-score": 68, "HA": "", "IR": "37", "CO": "73", "WP": "78", "BWA": "217-222", "Percentile": 96},
+                {"T-score": 67, "HA": "37", "IR": "36", "CO": "72", "WP": "74-77", "BWA": "215-216", "Percentile": 95},
+                {"T-score": 66, "HA": "", "IR": "35", "CO": "71", "WP": "73", "BWA": "199-214", "Percentile": 94},
+                {"T-score": 65, "HA": "36", "IR": "34", "CO": "70", "WP": "72", "BWA": "194-198", "Percentile": 93},
+                {"T-score": 64, "HA": "", "IR": "33", "CO": "69", "WP": "71", "BWA": "189-193", "Percentile": 92},
+                {"T-score": 63, "HA": "35", "IR": "31-32", "CO": "68", "WP": "70", "BWA": "185-188", "Percentile": 90},
+                {"T-score": 62, "HA": "", "IR": "30", "CO": "65-67", "WP": "69", "BWA": "183-184", "Percentile": 88},
+                {"T-score": 61, "HA": "34", "IR": "", "CO": "", "WP": "68", "BWA": "182", "Percentile": 86},
+                {"T-score": 60, "HA": "33", "IR": "29", "CO": "63-64", "WP": "67", "BWA": "177-181", "Percentile": 84},
+                {"T-score": 59, "HA": "", "IR": "28", "CO": "61-62", "WP": "66", "BWA": "175-176", "Percentile": 82},
+                {"T-score": 58, "HA": "32", "IR": "27", "CO": "", "WP": "65", "BWA": "172-174", "Percentile": 79},
+                {"T-score": 57, "HA": "", "IR": "", "CO": "60", "WP": "64", "BWA": "171", "Percentile": 75},
+                {"T-score": 56, "HA": "31", "IR": "26", "CO": "57-59", "WP": "59-63", "BWA": "170", "Percentile": 73},
+                {"T-score": 55, "HA": "", "IR": "", "CO": "", "WP": "58", "BWA": "168-169", "Percentile": 69},
+                {"T-score": 54, "HA": "29-30", "IR": "24-25", "CO": "56", "WP": "55-57", "BWA": "164-167", "Percentile": 66},
+                {"T-score": 53, "HA": "28", "IR": "23", "CO": "53-55", "WP": "52-54", "BWA": "161-163", "Percentile": 62},
+                {"T-score": 52, "HA": "", "IR": "22", "CO": "52", "WP": "51", "BWA": "156-160", "Percentile": 58},
+                {"T-score": 51, "HA": "27", "IR": "21", "CO": "51", "WP": "", "BWA": "154-155", "Percentile": 54},
+                {"T-score": 50, "HA": "", "IR": "", "CO": "50", "WP": "48-50", "BWA": "147-153", "Percentile": 50},
+                {"T-score": 49, "HA": "26", "IR": "20", "CO": "49", "WP": "46-47", "BWA": "143-146", "Percentile": 46},
+                {"T-score": 48, "HA": "25", "IR": "19", "CO": "47-48", "WP": "44-45", "BWA": "136-142", "Percentile": 42},
+                {"T-score": 47, "HA": "", "IR": "", "CO": "46", "WP": "", "BWA": "135", "Percentile": 38},
+                {"T-score": 46, "HA": "", "IR": "17-18", "CO": "44-45", "WP": "43", "BWA": "132-134", "Percentile": 34},
+                {"T-score": 45, "HA": "24", "IR": "", "CO": "43", "WP": "42", "BWA": "130-131", "Percentile": 31},
+                {"T-score": 44, "HA": "22-23", "IR": "16", "CO": "38-42", "WP": "40-41", "BWA": "124-129", "Percentile": 27},
+                {"T-score": 43, "HA": "21", "IR": "14-15", "CO": "37", "WP": "39", "BWA": "117-123", "Percentile": 25},
+                {"T-score": 42, "HA": "20", "IR": "13", "CO": "36", "WP": "38", "BWA": "113-116", "Percentile": 21},
+                {"T-score": 41, "HA": "", "IR": "12", "CO": "34-35", "WP": "36-37", "BWA": "108-112", "Percentile": 18},
+                {"T-score": 40, "HA": "19", "IR": "", "CO": "", "WP": "33-35", "BWA": "105-107", "Percentile": 16},
+                {"T-score": 39, "HA": "18", "IR": "11", "CO": "33", "WP": "31-32", "BWA": "100-104", "Percentile": 14},
+                {"T-score": 38, "HA": "17", "IR": "10", "CO": "32", "WP": "30", "BWA": "97-99", "Percentile": 12},
+                {"T-score": 37, "HA": "", "IR": "9", "CO": "31", "WP": "29", "BWA": "94-96", "Percentile": 10},
+                {"T-score": 36, "HA": "15-16", "IR": "8", "CO": "29-30", "WP": "26-28", "BWA": "91-93", "Percentile": 8},
+                {"T-score": 35, "HA": "13-14", "IR": "6-7", "CO": "28", "WP": "25", "BWA": "84-90", "Percentile": 7},
+                {"T-score": 34, "HA": "12", "IR": "5", "CO": "26-27", "WP": "24", "BWA": "77-83", "Percentile": 5},
+                {"T-score": 32, "HA": "", "IR": "", "CO": "25", "WP": "23", "BWA": "75-76", "Percentile": 4},
+                {"T-score": 31, "HA": "11", "IR": "4", "CO": "", "WP": "20-22", "BWA": "74", "Percentile": 3},
+                {"T-score": 29, "HA": "10", "IR": "3", "CO": "24", "WP": "15-19", "BWA": "72-73", "Percentile": 2},
+                {"T-score": 27, "HA": "0-9", "IR": "0-2", "CO": "0-23", "WP": "0-14", "BWA": "0-71", "Percentile": 1}
+            ]
+        };
+
+        // Parse raw score strings into min and max values
+        function parseRawScore(str) {
+            if (!str) return null;
+            const rangeMatch = str.match(/^(\d+)-(\d+)$/);
+            if (rangeMatch) return { min: parseInt(rangeMatch[1]), max: parseInt(rangeMatch[2]) };
+            const singleMatch = str.match(/^(\d+)$/);
+            if (singleMatch) {
+                const num = parseInt(singleMatch[1]);
+                return { min: num, max: num };
+            }
+            return null;
+        }
+
+        // Build lookup tables for each norm and scale
+        const scales = ["HA", "IR", "CO", "WP", "BWA"];
+        const lookupTables = {};
+        for (const norm in norms) {
+            lookupTables[norm] = {};
+            for (const scale of scales) {
+                lookupTables[norm][scale] = norms[norm]
+                    .map(row => {
+                        const parsed = parseRawScore(row[scale]);
+                        if (parsed) return { Tscore: row["T-score"], min: parsed.min, max: parsed.max, percentile: row.Percentile };
+                        return null;
+                    })
+                    .filter(entry => entry !== null);
+            }
+        }
+
+        // Find T-score and percentile for a raw score
+        function findTscore(lookupTable, rawScore) {
+            for (const entry of lookupTable) {
+                if (rawScore >= entry.min && rawScore <= entry.max) {
+                    return { Tscore: entry.Tscore, percentile: entry.percentile };
+                }
+            }
+            if (lookupTable.length > 0) {
+                if (rawScore > lookupTable[0].max) return { Tscore: lookupTable[0].Tscore, percentile: lookupTable[0].percentile };
+                if (rawScore < lookupTable[lookupTable.length - 1].min) return { Tscore: lookupTable[lookupTable.length - 1].Tscore, percentile: lookupTable[lookupTable.length - 1].percentile };
+            }
+            return { Tscore: "N/A", percentile: "N/A" };
+        }
+
+        // Map T-scores to Work Placement Level
+        function getLevel(Tscore) {
+            if (Tscore >= 67) return "Competitive";
+            if (Tscore >= 61) return "Transitional";
+            if (Tscore >= 53) return "High Sheltered";
+            if (Tscore >= 45) return "Low Sheltered";
+            if (Tscore >= 37) return "Work Activity";
+            return "Day Care";
+        }
+
+        // Map T-scores to Work Support Needs
+        function getSupport(Tscore) {
+            if (Tscore >= 62) return "Limited";
+            if (Tscore >= 54) return "Low";
+            if (Tscore >= 48) return "Moderate";
+            if (Tscore >= 40) return "High";
+            return "Extensive";
+        }
+
+        // Event listeners
+        document.addEventListener("DOMContentLoaded", () => {
+            const homepage = document.getElementById("homepage");
+            const bwap2 = document.getElementById("bwap2");
+            const bwap2Btn = document.getElementById("bwap2Btn");
+            const backBtn = document.getElementById("backBtn");
+            const normSelect = document.getElementById("normSelect");
+            const haInput = document.getElementById("haInput");
+            const irInput = document.getElementById("irInput");
+            const coInput = document.getElementById("coInput");
+            const wpInput = document.getElementById("wpInput");
+            const bwaInput = document.getElementById("bwaInput");
+            const enterBtn = document.getElementById("enterBtn");
+            const resetBtn = document.getElementById("resetBtn");
+            const resultsDiv = document.getElementById("results");
+
+            // Navigate to BWAP 2 page
+            bwap2Btn.addEventListener("click", () => {
+                homepage.style.display = "none";
+                bwap2.style.display = "block";
+            });
+
+            // Navigate back to homepage
+            backBtn.addEventListener("click", () => {
+                bwap2.style.display = "none";
+                homepage.style.display = "block";
+            });
+
+            // Calculate and display results
+            enterBtn.addEventListener("click", () => {
+                const norm = normSelect.value;
+                const ha = parseInt(haInput.value) || 0;
+                const ir = parseInt(irInput.value) || 0;
+                const co = parseInt(coInput.value) || 0;
+                const wp = parseInt(wpInput.value) || 0;
+                if (isNaN(ha) || isNaN(ir) || isNaN(co) || isNaN(wp)) {
+                    alert("Please enter valid numbers for HA, IR, CO, WP");
+                    return;
+                }
+                const bwa = ha + ir + co + wp;
+                bwaInput.value = bwa;
+
+                const rawScores = [ha, ir, co, wp, bwa];
+                const lookup = lookupTables[norm];
+                let resultsHtml = `
+                    <table>
+                        <tr>
+                            <th>Scale</th>
+                            <th>Raw Score</th>
+                            <th>T-score</th>
+                            <th>Percentile</th>
+                            <th>Work Placement Level</th>
+                            <th>Work Support Needs</th>
+                        </tr>
+                `;
+                scales.forEach((scale, index) => {
+                    const rawScore = rawScores[index];
+                    const { Tscore, percentile } = findTscore(lookup[scale], rawScore);
+                    const level = getLevel(Tscore);
+                    const support = getSupport(Tscore);
+                    resultsHtml += `
+                        <tr>
+                            <td>${scale}</td>
+                            <td>${rawScore}</td>
+                            <td>${Tscore}</td>
+                            <td>${percentile}</td>
+                            <td>${level}</td>
+                            <td>${support}</td>
+                        </tr>
+                    `;
+                });
+                resultsHtml += "</table>";
+                resultsDiv.innerHTML = resultsHtml;
+            });
+
+            // Reset all inputs and results
+            resetBtn.addEventListener("click", () => {
+                haInput.value = "";
+                irInput.value = "";
+                coInput.value = "";
+                wpInput.value = "";
+                bwaInput.value = "";
+                resultsDiv.innerHTML = "";
+                normSelect.selectedIndex = 0;
+            });
+        });
+    </script>
+</body>
+</html>
