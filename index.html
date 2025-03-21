@@ -2,14 +2,345 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OT Ax Scoring Conversion</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWAP 2 Scoring Conversion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 50px;
+        }
+        input, select {
+            padding: 5px;
+            width: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #enterBtn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        #resetBtn {
+            background-color: #ccc;
+            border: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
-    <h1>OT Ax Scoring Conversion</h1>
-    <div class="button-container">
-        <a href="bwap2.html"><button>BWAP 2</button></a>
-        <button disabled>Coming Soon</button>
+    <h1>BWAP 2 Scoring Conversion</h1>
+    <div class="container">
+        <div class="input-group">
+            <label>Select Norm:</label>
+            <select id="normSelect">
+                <option value="MR">MR</option>
+                <option value="Learning Disability">Learning Disability</option>
+                <option value="Physical Disability">Physical Disability</option>
+                <option value="Emotional Disturbance">Emotional Disturbance</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>HA:</label>
+            <input type="number" id="haInput">
+        </div>
+        <div class="input-group">
+            <label>IR:</label>
+            <input type="number" id="irInput">
+        </div>
+        <div class="input-group">
+            <label>CO:</label>
+            <input type="number" id="coInput">
+        </div>
+        <div class="input-group">
+            <label>WP:</label>
+            <input type="number" id="wpInput">
+        </div>
+        <div class="input-group">
+            <label>BWA:</label>
+            <input type="number" id="bwaInput">
+        </div>
+        <button id="enterBtn">Enter</button>
+        <button id="resetBtn">Reset</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain</th>
+                    <th>T-Score</th>
+                    <th>Percentile</th>
+                    <th>Work Placement Level</th>
+                    <th>Work Support Needs</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HA</td>
+                    <td id="haTScore">N/A</td>
+                    <td id="haPercentile">N/A</td>
+                    <td id="haPlacement">N/A</td>
+                    <td id="haSupport">N/A</td>
+                </tr>
+                <tr>
+                    <td>IR</td>
+                    <td id="irTScore">N/A</td>
+                    <td id="irPercentile">N/A</td>
+                    <td id="irPlacement">N/A</td>
+                    <td id="irSupport">N/A</td>
+                </tr>
+                <tr>
+                    <td>CO</td>
+                    <td id="coTScore">N/A</td>
+                    <td id="coPercentile">N/A</td>
+                    <td id="coPlacement">N/A</td>
+                    <td id="coSupport">N/A</td>
+                </tr>
+                <tr>
+                    <td>WP</td>
+                    <td id="wpTScore">N/A</td>
+                    <td id="wpPercentile">N/A</td>
+                    <td id="wpPlacement">N/A</td>
+                    <td id="wpSupport">N/A</td>
+                </tr>
+                <tr>
+                    <td>BWA</td>
+                    <td id="bwaTScore">N/A</td>
+                    <td id="bwaPercentile">N/A</td>
+                    <td id="bwaPlacement">N/A</td>
+                    <td id="bwaSupport">N/A</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+
+    <script>
+        // Norm Scoring Tables (only MR included; add others as needed)
+        const normTables = {
+            "MR": [
+                { tScore: 73, ha: "", ir: "48", co: "71-76", wp: "84-88", bwa: "231-252", percentile: 99 },
+                { tScore: 71, ha: "40", ir: "47", co: "68-70", wp: "82-83", bwa: "225-230", percentile: 98 },
+                { tScore: 69, ha: "", ir: "", co: "65-67", wp: "81", bwa: "222-224", percentile: 97 },
+                { tScore: 68, ha: "39", ir: "45-46", co: "64", wp: "79-80", bwa: "218-221", percentile: 96 },
+                { tScore: 67, ha: "", ir: "", co: "63", wp: "78", bwa: "212-217", percentile: 95 },
+                { tScore: 66, ha: "", ir: "44", co: "61-62", wp: "77", bwa: "210-211", percentile: 94 },
+                { tScore: 65, ha: "38", ir: "43", co: "60", wp: "76", bwa: "207-209", percentile: 93 },
+                { tScore: 64, ha: "37", ir: "42", co: "59", wp: "75", bwa: "202-206", percentile: 92 },
+                { tScore: 63, ha: "", ir: "41", co: "57-58", wp: "73-74", bwa: "198-201", percentile: 90 },
+                { tScore: 62, ha: "36", ir: "", co: "55-56", wp: "72", bwa: "193-197", percentile: 88 },
+                { tScore: 61, ha: "", ir: "40", co: "54", wp: "70-71", bwa: "192", percentile: 86 },
+                { tScore: 60, ha: "35", ir: "39", co: "51-53", wp: "68-69", bwa: "186-191", percentile: 84 },
+                { tScore: 59, ha: "34", ir: "37-38", co: "49-50", wp: "66-67", bwa: "182-185", percentile: 82 },
+                { tScore: 58, ha: "", ir: "36", co: "48", wp: "64-65", bwa: "178-181", percentile: 79 },
+                { tScore: 57, ha: "33", ir: "", co: "47", wp: "62-63", bwa: "174-177", percentile: 75 },
+                { tScore: 56, ha: "31-32", ir: "35", co: "46", wp: "59-61", bwa: "166-173", percentile: 73 },
+                { tScore: 55, ha: "", ir: "34", co: "45", wp: "57-58", bwa: "162-165", percentile: 69 },
+                { tScore: 54, ha: "30", ir: "33", co: "44", wp: "56", bwa: "153-161", percentile: 66 },
+                { tScore: 53, ha: "29", ir: "31-32", co: "40-43", wp: "53-55", bwa: "146-152", percentile: 62 },
+                { tScore: 52, ha: "28", ir: "30", co: "37-39", wp: "50-52", bwa: "142-145", percentile: 58 },
+                { tScore: 51, ha: "27", ir: "29", co: "35-36", wp: "47-49", bwa: "139-141", percentile: 54 },
+                { tScore: 50, ha: "26", ir: "28", co: "34", wp: "46", bwa: "135-138", percentile: 50 },
+                { tScore: 49, ha: "25", ir: "27", co: "31-33", wp: "44-45", bwa: "129-134", percentile: 46 },
+                { tScore: 48, ha: "24", ir: "25-26", co: "28-30", wp: "41-43", bwa: "121-128", percentile: 42 },
+                { tScore: 47, ha: "23", ir: "24", co: "26-27", wp: "38-40", bwa: "115-120", percentile: 38 },
+                { tScore: 46, ha: "22", ir: "23", co: "24-25", wp: "37", bwa: "110-114", percentile: 34 },
+                { tScore: 45, ha: "", ir: "22", co: "23", wp: "35-36", bwa: "107-109", percentile: 31 },
+                { tScore: 44, ha: "21", ir: "21", co: "20-22", wp: "33-34", bwa: "97-106", percentile: 27 },
+                { tScore: 43, ha: "20", ir: "20", co: "19", wp: "32", bwa: "93-96", percentile: 25 },
+                { tScore: 42, ha: "19", ir: "19", co: "17-18", wp: "29-31", bwa: "89-92", percentile: 21 },
+                { tScore: 41, ha: "18", ir: "18", co: "16", wp: "28", bwa: "86-88", percentile: 18 },
+                { tScore: 40, ha: "", ir: "17", co: "15", wp: "26-27", bwa: "79-85", percentile: 16 },
+                { tScore: 39, ha: "17", ir: "16", co: "13-14", wp: "25", bwa: "76-78", percentile: 14 },
+                { tScore: 38, ha: "16", ir: "15", co: "12", wp: "23-24", bwa: "72-75", percentile: 12 },
+                { tScore: 37, ha: "", ir: "13-14", co: "11", wp: "21-22", bwa: "68-71", percentile: 10 },
+                { tScore: 36, ha: "15", ir: "12", co: "8-10", wp: "20", bwa: "61-67", percentile: 8 },
+                { tScore: 35, ha: "14", ir: "11", co: "7", wp: "18-19", bwa: "55-60", percentile: 7 },
+                { tScore: 34, ha: "13", ir: "10", co: "5-6", wp: "14-17", bwa: "45-54", percentile: 5 },
+                { tScore: 32, ha: "12", ir: "8-9", co: "4", wp: "10-13", bwa: "39-44", percentile: 4 },
+                { tScore: 31, ha: "11", ir: "7", co: "", wp: "7-9", bwa: "29-38", percentile: 3 },
+                { tScore: 29, ha: "9-10", ir: "5-6", co: "3", wp: "4-6", bwa: "20-28", percentile: 2 },
+                { tScore: 27, ha: "0-8", ir: "0-4", co: "0-2", wp: "0-3", bwa: "0-19", percentile: 1 }
+            ],
+            // Add other norms here as needed
+            "Learning Disability": [],
+            "Physical Disability": [],
+            "Emotional Disturbance": []
+        };
+
+        // Work Placement Levels
+        const workPlacementLevels = [
+            { range: [67, Infinity], level: "Competitive" },
+            { range: [61, 66], level: "Transitional" },
+            { range: [53, 60], level: "High Sheltered" },
+            { range: [45, 52], level: "Low Sheltered" },
+            { range: [37, 44], level: "Work Activity" },
+            { range: [-Infinity, 36], level: "Day Care" }
+        ];
+
+        // Work Support Needs
+        const workSupportNeeds = [
+            { range: [62, Infinity], level: "Limited" },
+            { range: [54, 61], level: "Low" },
+            { range: [48, 53], level: "Moderate" },
+            { range: [40, 47], level: "High" },
+            { range: [-Infinity, 39], level: "Extensive" }
+        ];
+
+        // Function to parse range strings (e.g., "71-76" or "48")
+        function parseRange(rangeStr) {
+            if (!rangeStr || rangeStr === "") return null;
+            if (rangeStr.includes("-")) {
+                const [min, max] = rangeStr.split("-").map(Number);
+                return { min, max };
+            }
+            return { min: Number(rangeStr), max: Number(rangeStr) };
+        }
+
+        // Function to find T-Score and Percentile based on raw score
+        function findTScoreAndPercentile(rawScore, domain, normTable) {
+            if (isNaN(rawScore) || rawScore === "") return { tScore: "N/A", percentile: "N/A" };
+            for (const row of normTable) {
+                const range = parseRange(row[domain]);
+                if (range && rawScore >= range.min && rawScore <= range.max) {
+                    return { tScore: row.tScore, percentile: row.percentile };
+                }
+            }
+            return { tScore: "N/A", percentile: "N/A" };
+        }
+
+        // Function to determine Work Placement Level
+        function getWorkPlacementLevel(tScore) {
+            if (tScore === "N/A") return "N/A";
+            for (const level of workPlacementLevels) {
+                if (tScore >= level.range[0] && tScore <= level.range[1]) {
+                    return level.level;
+                }
+            }
+            return "N/A";
+        }
+
+        // Function to determine Work Support Needs
+        function getWorkSupportNeeds(tScore) {
+            if (tScore === "N/A") return "N/A";
+            for (const need of workSupportNeeds) {
+                if (tScore >= need.range[0] && tScore <= need.range[1]) {
+                    return need.level;
+                }
+            }
+            return "N/A";
+        }
+
+        // Event Listeners
+        document.getElementById("enterBtn").addEventListener("click", () => {
+            const norm = document.getElementById("normSelect").value;
+            const normTable = normTables[norm] || normTables["MR"]; // Default to MR if norm not found
+
+            const ha = document.getElementById("haInput").value.trim();
+            const ir = document.getElementById("irInput").value.trim();
+            const co = document.getElementById("coInput").value.trim();
+            const wp = document.getElementById("wpInput").value.trim();
+            const bwa = document.getElementById("bwaInput").value.trim();
+
+            // Convert to numbers, allowing empty strings to be handled
+            const haNum = ha === "" ? "" : Number(ha);
+            const irNum = ir === "" ? "" : Number(ir);
+            const coNum = co === "" ? "" : Number(co);
+            const wpNum = wp === "" ? "" : Number(wp);
+            const bwaNum = bwa === "" ? "" : Number(bwa);
+
+            // Calculate for each domain
+            const haResult = findTScoreAndPercentile(haNum, "ha", normTable);
+            const irResult = findTScoreAndPercentile(irNum, "ir", normTable);
+            const coResult = findTScoreAndPercentile(coNum, "co", normTable);
+            const wpResult = findTScoreAndPercentile(wpNum, "wp", normTable);
+            const bwaResult = findTScoreAndPercentile(bwaNum, "bwa", normTable);
+
+            // Update table
+            document.getElementById("haTScore").textContent = haResult.tScore;
+            document.getElementById("haPercentile").textContent = haResult.percentile;
+            document.getElementById("haPlacement").textContent = getWorkPlacementLevel(haResult.tScore);
+            document.getElementById("haSupport").textContent = getWorkSupportNeeds(haResult.tScore);
+
+            document.getElementById("irTScore").textContent = irResult.tScore;
+            document.getElementById("irPercentile").textContent = irResult.percentile;
+            document.getElementById("irPlacement").textContent = getWorkPlacementLevel(irResult.tScore);
+            document.getElementById("irSupport").textContent = getWorkSupportNeeds(irResult.tScore);
+
+            document.getElementById("coTScore").textContent = coResult.tScore;
+            document.getElementById("coPercentile").textContent = coResult.percentile;
+            document.getElementById("coPlacement").textContent = getWorkPlacementLevel(coResult.tScore);
+            document.getElementById("coSupport").textContent = getWorkSupportNeeds(coResult.tScore);
+
+            document.getElementById("wpTScore").textContent = wpResult.tScore;
+            document.getElementById("wpPercentile").textContent = wpResult.percentile;
+            document.getElementById("wpPlacement").textContent = getWorkPlacementLevel(wpResult.tScore);
+            document.getElementById("wpSupport").textContent = getWorkSupportNeeds(wpResult.tScore);
+
+            document.getElementById("bwaTScore").textContent = bwaResult.tScore;
+            document.getElementById("bwaPercentile").textContent = bwaResult.percentile;
+            document.getElementById("bwaPlacement").textContent = getWorkPlacementLevel(bwaResult.tScore);
+            document.getElementById("bwaSupport").textContent = getWorkSupportNeeds(bwaResult.tScore);
+        });
+
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            document.getElementById("haInput").value = "";
+            document.getElementById("irInput").value = "";
+            document.getElementById("coInput").value = "";
+            document.getElementById("wpInput").value = "";
+            document.getElementById("bwaInput").value = "";
+
+            document.getElementById("haTScore").textContent = "N/A";
+            document.getElementById("haPercentile").textContent = "N/A";
+            document.getElementById("haPlacement").textContent = "N/A";
+            document.getElementById("haSupport").textContent = "N/A";
+
+            document.getElementById("irTScore").textContent = "N/A";
+            document.getElementById("irPercentile").textContent = "N/A";
+            document.getElementById("irPlacement").textContent = "N/A";
+            document.getElementById("irSupport").textContent = "N/A";
+
+            document.getElementById("coTScore").textContent = "N/A";
+            document.getElementById("coPercentile").textContent = "N/A";
+            document.getElementById("coPlacement").textContent = "N/A";
+            document.getElementById("coSupport").textContent = "N/A";
+
+            document.getElementById("wpTScore").textContent = "N/A";
+            document.getElementById("wpPercentile").textContent = "N/A";
+            document.getElementById("wpPlacement").textContent = "N/A";
+            document.getElementById("wpSupport").textContent = "N/A";
+
+            document.getElementById("bwaTScore").textContent = "N/A";
+            document.getElementById("bwaPercentile").textContent = "N/A";
+            document.getElementById("bwaPlacement").textContent = "N/A";
+            document.getElementById("bwaSupport").textContent = "N/A";
+        });
+    </script>
 </body>
 </html>
